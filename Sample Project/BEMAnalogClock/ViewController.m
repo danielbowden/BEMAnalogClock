@@ -53,6 +53,56 @@
     self.myClock2.secondHandAlpha = 0;
     self.myClock2.delegate = self;
     self.myClock2.userInteractionEnabled = NO;
+    
+    self.sydneyClock.timeZone = [NSTimeZone timeZoneWithName:@"Australia/Sydney"];
+    self.sydneyClock.setTimeViaTouch = NO;
+    self.sydneyClock.realTime = YES;
+    self.sydneyClock.currentTime = YES;
+    self.sydneyClock.borderColor = [UIColor whiteColor];
+    self.sydneyClock.borderWidth = 1;
+    self.sydneyClock.faceBackgroundColor = [UIColor whiteColor];
+    self.sydneyClock.faceBackgroundAlpha = 0.0;
+    self.sydneyClock.delegate = self;
+    self.sydneyClock.hourHandWidth = 1.0;
+    self.sydneyClock.hourHandLength = 15;
+    self.sydneyClock.minuteHandWidth = 1.0;
+    self.sydneyClock.minuteHandLength = 20;
+    self.sydneyClock.minuteHandOffsideLength = 0;
+    self.sydneyClock.hourHandOffsideLength = 0;
+    self.sydneyClock.secondHandLength = 20;
+    self.sydneyClock.secondHandOffsideLength = 5;
+    self.sydneyClock.digitFont = [UIFont fontWithName:@"HelveticaNeue-Thin" size:10];
+    self.sydneyClock.digitColor = [UIColor whiteColor];
+    self.sydneyClock.digitOffset = 12;
+    self.sydneyClock.enableDigit = YES;
+    self.sydneyClock.enableGraduations = NO;
+    self.sydneyClock.delegate = self;
+    self.sydneyClock.userInteractionEnabled = NO;
+    
+    self.londonClock.timeZone = [NSTimeZone timeZoneWithName:@"Europe/London"];
+    self.londonClock.setTimeViaTouch = NO;
+    self.londonClock.realTime = YES;
+    self.londonClock.currentTime = YES;
+    self.londonClock.borderColor = [UIColor whiteColor];
+    self.londonClock.borderWidth = 1;
+    self.londonClock.faceBackgroundColor = [UIColor whiteColor];
+    self.londonClock.faceBackgroundAlpha = 0.0;
+    self.londonClock.delegate = self;
+    self.londonClock.hourHandWidth = 1.0;
+    self.londonClock.hourHandLength = 15;
+    self.londonClock.minuteHandWidth = 1.0;
+    self.londonClock.minuteHandLength = 20;
+    self.londonClock.minuteHandOffsideLength = 0;
+    self.londonClock.hourHandOffsideLength = 0;
+    self.londonClock.secondHandLength = 20;
+    self.londonClock.secondHandOffsideLength = 5;
+    self.londonClock.digitFont = [UIFont fontWithName:@"HelveticaNeue-Thin" size:10];
+    self.londonClock.digitColor = [UIColor whiteColor];
+    self.londonClock.digitOffset = 12;
+    self.londonClock.enableDigit = YES;
+    self.londonClock.enableGraduations = NO;
+    self.londonClock.delegate = self;
+    self.londonClock.userInteractionEnabled = NO;
 
     UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
     panGesture.delegate = self;
@@ -61,54 +111,58 @@
 }
 
 - (CGFloat)analogClock:(BEMAnalogClockView *)clock graduationLengthForIndex:(NSInteger)index {
-    if (clock.tag == 1) {
-        if (!(index % 5) == 1) { // Every 5 graduation will be longer.
+    if (clock == self.myClock1) {
+        if ((index % 5) == 0) { // Every 5 graduation will be longer.
             return 20;
         } else {
             return 5;
         }
     }
+    
     else return 0;
 }
 
 - (UIColor *)analogClock:(BEMAnalogClockView *)clock graduationColorForIndex:(NSInteger)index {
-    if (!(index % 15) == 1) { // Every 15 graduation will be blue.
+    if ((index % 15) == 0) {
         return [UIColor blueColor];
-    } else {
+    }
+    else
+    {
         return [UIColor whiteColor];
     }
 }
 
-- (void)currentTimeOnClock:(BEMAnalogClockView *)clock Hours:(NSString *)hours Minutes:(NSString *)minutes Seconds:(NSString *)seconds {
-    if (clock.tag == 1) {
+- (void)currentTimeOnClock:(BEMAnalogClockView *)clock date:(NSDate *)date timeZone:(NSTimeZone *)timeZone hours:(NSString *)hours minutes:(NSString *)minutes seconds:(NSString *)seconds {
+    if (clock == self.myClock1) {
         int hoursInt = [hours intValue];
         int minutesInt = [minutes intValue];
         int secondsInt = [seconds intValue];
         self.myLabel.text = [NSString stringWithFormat:@"%02d:%02d:%02d", hoursInt, minutesInt, secondsInt];
-     }
+        
+        self.sydneyClock.date = date;
+        [self.sydneyClock updateTimeAnimated:YES];
+        
+        self.londonClock.date = date;
+        [self.londonClock updateTimeAnimated:YES];
+    }
 }
 
 - (void)handlePan:(UIPanGestureRecognizer *)recognizer {
     CGPoint translation = [recognizer locationInView:self.view];
-//    self.myClock1.minutes = translation.x / 5.33333;
-
+    CGPoint velocity = [recognizer velocityInView:self.view];
     float minutes = translation.x/2.666667;  // 320 width / 2.666667 = 120 minutes [2 hours]
-
-    if (!_dateFormatter){
-        _dateFormatter = [[NSDateFormatter alloc] init];
-        [_dateFormatter setDateFormat:@"HH:mm:ss"];
-        _calendar = [NSCalendar currentCalendar];
-        _date = [_dateFormatter dateFromString:self.myLabel.text];
+    
+    _date = self.myClock2.date;
+    NSDate *newDate;
+    if (velocity.x > 0) { //panned right, go forward in time
+        newDate = [_date dateByAddingTimeInterval:minutes];
+    } else { //panned left, go backward in time
+        newDate = [_date dateByAddingTimeInterval:-minutes];
     }
-    NSDate           *datePlusMinutes = [_date dateByAddingTimeInterval:minutes*60];
-    NSDateComponents *components      = [_calendar components:(NSHourCalendarUnit | NSMinuteCalendarUnit) fromDate:datePlusMinutes];
-    NSInteger hour   = [components hour];
-    NSInteger minute = [components minute];
 
-    self.myClock1.minutes = minute;
-    self.myClock1.hours   = hour;
+    self.myClock1.date = newDate;
+    self.myClock2.date = newDate;
 
-    [self matchHoursClock1ToClock2];
     [self.myClock1 updateTimeAnimated:NO];
     [self.myClock2 updateTimeAnimated:NO];
 }
@@ -147,7 +201,24 @@
  
  - (NSString *)timeForClock:(BEMAnalogClockView *)clock {
  return @"11, 03 1982 22:34:22";
- } */
+ }
+
+ - (NSDate *)dateForClock:(BEMAnalogClockView *)clock {
+     NSDate *now = [NSDate date];
+     return now;
+ }
+
+ // OR //
+
+ - (NSDate *)dateForClock:(BEMAnalogClockView *)clock {
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar components:NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:[NSDate date]];
+    components.hour = 4;
+    components.minute = 35;
+    components.second = 0;
+    return [calendar dateFromComponents:components];
+}
+*/
 
 - (void)didReceiveMemoryWarning
 {

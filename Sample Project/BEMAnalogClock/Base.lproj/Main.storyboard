@@ -40,7 +40,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <view tag="1" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iyM-jY-zVi" customClass="BEMAnalogClockView">
-                                <rect key="frame" x="60" y="99" width="200" height="200"/>
+                                <rect key="frame" x="60" y="69" width="200" height="200"/>
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="200" id="rt2-lJ-1eZ"/>
@@ -48,6 +48,17 @@
                                 </constraints>
                                 <connections>
                                     <outlet property="delegate" destination="vXZ-lx-hvc" id="aqB-Eh-ZiI"/>
+                                </connections>
+                            </view>
+                            <view tag="1" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="NR3-i8-ws8" customClass="BEMAnalogClockView">
+                                <rect key="frame" x="220" y="274" width="80" height="80"/>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="80" id="RBt-Ey-vDn"/>
+                                    <constraint firstAttribute="width" constant="80" id="e6G-Fy-fGQ"/>
+                                </constraints>
+                                <connections>
+                                    <outlet property="delegate" destination="vXZ-lx-hvc" id="HvG-XM-Bnw"/>
                                 </connections>
                             </view>
                             <view alpha="0.89999999999999991" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4UQ-lJ-0NJ">
@@ -77,18 +88,55 @@
                                 <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <color key="highlightedColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="London" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9gA-wg-A6M">
+                                <rect key="frame" x="232" y="354" width="57.5" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="gAV-kF-GwW"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view tag="1" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DLf-J8-kAv" customClass="BEMAnalogClockView">
+                                <rect key="frame" x="20" y="274" width="80" height="80"/>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="80" id="Msj-e9-fG6"/>
+                                    <constraint firstAttribute="height" constant="80" id="sOQ-nJ-Jvm"/>
+                                </constraints>
+                                <connections>
+                                    <outlet property="delegate" destination="vXZ-lx-hvc" id="TKs-2z-oFI"/>
+                                </connections>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sydney" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="C7C-BT-jAC">
+                                <rect key="frame" x="32" y="354" width="57" height="21"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="21" id="vfT-wY-4Yh"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstItem="4UQ-lJ-0NJ" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" id="4r7-Jm-1Ag"/>
+                            <constraint firstItem="C7C-BT-jAC" firstAttribute="top" secondItem="DLf-J8-kAv" secondAttribute="bottom" id="9U0-pa-C2c"/>
                             <constraint firstItem="qYf-MF-Gaz" firstAttribute="top" secondItem="JB1-Ex-e4j" secondAttribute="bottom" id="9fG-K9-vmm"/>
                             <constraint firstAttribute="trailing" secondItem="4UQ-lJ-0NJ" secondAttribute="trailing" id="Emy-9c-UQv"/>
+                            <constraint firstItem="DLf-J8-kAv" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" constant="20" id="HpR-67-Bnq"/>
+                            <constraint firstItem="9gA-wg-A6M" firstAttribute="centerX" secondItem="NR3-i8-ws8" secondAttribute="centerX" id="L5G-If-biw"/>
+                            <constraint firstItem="C7C-BT-jAC" firstAttribute="centerX" secondItem="DLf-J8-kAv" secondAttribute="centerX" id="LES-h2-hlc"/>
                             <constraint firstItem="JB1-Ex-e4j" firstAttribute="leading" secondItem="adN-Kw-C8x" secondAttribute="trailing" constant="7" id="Nab-XG-ViZ"/>
+                            <constraint firstAttribute="trailing" secondItem="NR3-i8-ws8" secondAttribute="trailing" constant="20" id="PVW-Lf-TfR"/>
+                            <constraint firstItem="iyM-jY-zVi" firstAttribute="top" secondItem="y7B-1E-lGl" secondAttribute="bottom" constant="5" id="Red-zz-Wbz"/>
                             <constraint firstAttribute="trailing" secondItem="JB1-Ex-e4j" secondAttribute="trailing" id="SIS-az-eP7"/>
                             <constraint firstItem="iyM-jY-zVi" firstAttribute="centerX" secondItem="kh9-bI-dsS" secondAttribute="centerX" id="Ubu-7t-3su"/>
+                            <constraint firstItem="9gA-wg-A6M" firstAttribute="top" secondItem="NR3-i8-ws8" secondAttribute="bottom" id="VZc-Kk-CuV"/>
                             <constraint firstItem="adN-Kw-C8x" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" constant="10" id="anZ-oH-HmQ"/>
-                            <constraint firstItem="iyM-jY-zVi" firstAttribute="top" secondItem="y7B-1E-lGl" secondAttribute="bottom" constant="35" id="atC-ak-u9T"/>
+                            <constraint firstItem="DLf-J8-kAv" firstAttribute="top" secondItem="iyM-jY-zVi" secondAttribute="bottom" constant="5" id="cN2-Z3-wv8"/>
                             <constraint firstItem="qYf-MF-Gaz" firstAttribute="top" secondItem="adN-Kw-C8x" secondAttribute="bottom" constant="25" id="guQ-gt-RbM"/>
+                            <constraint firstItem="NR3-i8-ws8" firstAttribute="top" secondItem="iyM-jY-zVi" secondAttribute="bottom" constant="5" id="kaW-np-MrU"/>
                             <constraint firstItem="qYf-MF-Gaz" firstAttribute="top" secondItem="4UQ-lJ-0NJ" secondAttribute="bottom" id="sBS-x6-349"/>
                         </constraints>
                     </view>
@@ -106,11 +154,13 @@
                     </navigationItem>
                     <connections>
                         <outlet property="currentTimeButton" destination="eUH-A2-kzX" id="w8W-70-8a8"/>
+                        <outlet property="londonClock" destination="NR3-i8-ws8" id="0qa-13-xIj"/>
                         <outlet property="myClock1" destination="iyM-jY-zVi" id="Hot-Yj-JIw"/>
                         <outlet property="myClock2" destination="adN-Kw-C8x" id="ne8-9Z-0sZ"/>
                         <outlet property="myLabel" destination="JB1-Ex-e4j" id="zl1-ya-13k"/>
                         <outlet property="panView" destination="4UQ-lJ-0NJ" id="y0L-2K-hxR"/>
                         <outlet property="refreshButton" destination="orC-zq-SZF" id="m3S-GP-muq"/>
+                        <outlet property="sydneyClock" destination="DLf-J8-kAv" id="JpH-Hd-t8C"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>

@@ -13,6 +13,9 @@
 
 @property (weak, nonatomic) IBOutlet BEMAnalogClockView *myClock1; // The big, main clock.
 @property (weak, nonatomic) IBOutlet BEMAnalogClockView *myClock2; // The smaller clock.
+@property (weak, nonatomic) IBOutlet BEMAnalogClockView *londonClock; // The small Sydney clock.
+@property (weak, nonatomic) IBOutlet BEMAnalogClockView *sydneyClock; // The small London clock.
+
 @property (strong, nonatomic) IBOutlet UILabel *myLabel;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *refreshButton;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *currentTimeButton;

@@ -87,7 +87,7 @@ Setting up BEMAnalogClock in your project is simple. Follow the steps below to g
          [self.view addSubview:myClock];
 
 ### Setting up the time on the clock
-By default, the clock will display [10:10](http://en.wikipedia.org/wiki/Watch#Analog). There are two ways to initialize the clock with a custom time.
+By default, the clock will display [10:10](http://en.wikipedia.org/wiki/Watch#Analog). There are three ways to initialize the clock with a custom time.
 
 **By directly attributing values to the time properties**  
 The easiest way is to change the values of the NSInteger properties `hours`, `minutes` and `seconds`. For example in `viewDidLoad`, the time on the clock could be set up this way:  
@@ -96,10 +96,23 @@ The easiest way is to change the values of the NSInteger properties `hours`, `mi
     self.myClock.minutes = 37;
     self.myClock.seconds = 10;
 
+**By directly setting the date property**
+The clock can represent an NSDate in a given time zone. This can be useful for showing world clocks. A clock's `timeZone` property defaults to your local time zone. The easiest way is to change the `date` and optionally the `timeZone` values. For example in `viewDidLoad`, the time on multiple world clocks could be set up this way:
+
+    NSDate *now = [NSDate date];
+    self.localClock.date = now;
+
+    self.sydneyClock.timeZone = [NSTimeZone timeZoneWithName:@"Australia/Sydney"];
+    self.sydneyClock.date = now;
+
+    self.losAngelesClock.timeZone = [NSTimeZone timeZoneWithName:@"America/Los_Angeles"];
+    self.losAngelesClock.date = now;
+
 **By conforming to the `BEMAnalogClockDelegate` protocol**  
-The other way to set up the time on the clock is by using the delegate methods ` timeForClock:` and ` dateFormatterForClock:`.
+The other way to set up the time on the clock is by using the delegate methods ` timeForClock:` and ` dateFormatterForClock:` or `dateForClock:`.
 `timeForClock:` should return a string containing the time you want the clock to be set up at.
 `dateFormatterForClock:` should return the date format (string) used by the string for the time.
+`dateForClock:` should return an NSDate representing the point in time you want the clock to be set up at.
 Here is an example on how these methods are used on a ViewController:
 
     - (NSString *)timeForClock:(BEMAnalogClockView *)clock {
@@ -108,6 +121,22 @@ Here is an example on how these methods are used on a ViewController:
 
     - (NSString *)dateFormatterForClock:(BEMAnalogClockView *)clock {
         return @"MM, dd yyyy HH:mm:ss"; // The date format used by the string in “timeForClock”.
+    }
+
+    - (NSDate *)dateForClock:(BEMAnalogClockView *)clock {
+        NSDate *now = [NSDate date];
+        return now;
+    }
+
+    // OR //
+
+    - (NSDate *)dateForClock:(BEMAnalogClockView *)clock {
+        NSCalendar *calendar = [NSCalendar currentCalendar];
+        NSDateComponents *components = [calendar components:NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:[NSDate date]];
+        components.hour = 4;
+        components.minute = 35;
+        components.second = 0;
+        return [calendar dateFromComponents:components];
     }
 
 
@@ -130,7 +159,12 @@ The method `updateTimeAnimated:` is here to change the time on the clock after i
       self.myClock.seconds = arc4random() % 60 // Random value between 1 and 60
       [self.myClock updateTimeAnimated:YES] // Update the time on the clock
     }
-  
+
+    -(void)anotherMethodUsingDateInstead {
+      self.myClock.date = [NSDate date];
+      [self.myClock updateTimeAnimated:YES];
+    }
+
 <p align="center"><img src="http://s18.postimg.org/awr1qjm8p/BEMAnalog_Clock_Animation.gif"/></p>
 
 
@@ -162,15 +196,21 @@ Or you can use the methods `startRealTime` and `stopRealTime` to start/stop the 
 The property `realTimeIsActivated` (read only) reports if the clock is currently using the real time feature or not.
 
 ### Time reporting
-The method `currentTimeOnClock:` is here to get the time currently displayed on the clock. It gets called every time the clock is updated. The parameters `hours`, `minutes` and `seconds` are strings of the hours, minutes and seconds currently displayed on the clock.  
+The delegate method `currentTimeOnClock:date:timeZone:hours:minutes:seconds:` is here to get the time currently displayed on the clock. It gets called every time the clock is updated. The parameters `hours`, `minutes` and `seconds` are strings of the hours, minutes and seconds currently displayed on the clock. The `date` parameter is an NSDate for the full point in time currently displayed on the clock. The `timeZone` parameter the NSTimeZone this clock is displaying the time in.
 Here is an example on how to use the method:
 
-    - (void)currentTimeOnClock:(BEMAnalogClockView *)clock Hours:(NSString *)hours Minutes:(NSString *)minutes 
+    - (void)currentTimeOnClock:(BEMAnalogClockView *)clock date:(NSDate *)date timeZone:(NSTimeZone *)timeZone hours:(NSString *)hours minutes:(NSString *)minutes seconds:(NSString *)seconds;
         NSLog(@"Hours: %@", hours); // The hours currently displayed on the clock by the hour hand.
         NSLog(@"Minutes: %@", minutes); // The minutes currently displayed on the clock by the minute hand.
         NSLog(@"Seconds: %@", seconds); // The seconds currently displayed on the clock by the second hand.
+
+        NSLog(@"Time zone: %@", timeZone.name);
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        formatter.dateFormat = @"EE dd MMM yyyy HH:mm:ss";
+        formatter.timeZone = timeZone;
+        NSLog(@"Date: %@", [formatter stringFromDate:date]); // Logs "Date: Tue 20 Sep 2016 23:33:51"
     }
-    
+
 ### Adjusting the time on the clock via touch
 
 The BOOL property `setTimeViaTouch`, when set to YES, provides a way to adjust the time on the clock via touch input. The minute hand will follow the user's finger around the clock. The default value of this property is NO.
@@ -241,13 +281,22 @@ Three properties are here to customize this feature: `digitColor`, `digitFont` a
     
 ### Military Time (24 Hours)
 
-The BOOL property `militaryTime` gives the option to use the clock with military time.
+The clock can display the time provided in either 12hr or 24hr values. On an analog clock both will look the same, however if you would like to represent AM/PM correctly in the clock's reported `date` property you should use 24hr values. ie. 17 instead of 5.
 
 ```Objective-C
-self.myClock.militaryTime = YES; //Defaults to NO
+self.myClock.hours = 17;
+self.myClock.minutes = 5;
+self.myClock.seconds = 0;
+
+self.myClock2.hours = 5;
+self.myClock2.minutes = 5;
+self.myClock2.seconds = 0;
 ```
+
+On face value, both clocks will show five o'clock. However internally `myClock` is representing 5pm today and `myClock2` is representing 5am today.
+
+If you are simply displaying the time on a clock, without regard for time zones, dates, AM/PM you can set the clock with values in either format.
 
 ### Status reporting
 
 When the clock starts or completes loading it will call a delegate method. When it begins reloading the `clockDidBeginLoading:` method is called. When loading is finished, the `clockDidFinishLoading:` method is called (please note that as of now, the animation is not complete when this delegate method is called).
-

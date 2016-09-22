@@ -56,6 +56,11 @@
 
 @implementation BEMAnalogClockView
 
+// Synthesize required due to custom getters and setters
+@synthesize hours = _hours;
+@synthesize minutes = _minutes;
+@synthesize seconds = _seconds;
+
 #pragma mark - Initialization
 
 - (id)initWithFrame:(CGRect)frame {
@@ -77,10 +82,14 @@
 - (void)commonInit {
     // Do any initialization that's common to both -initWithFrame: and -initWithCoder: in this method
     
-    // DEFAULT VALUES
-    _hours = 10;
-    _minutes = 10;
-    _seconds = 0;
+    // DEFAULT VALUES    
+    _timeZone = [NSTimeZone localTimeZone];
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar componentsInTimeZone:_timeZone fromDate:[NSDate date]];
+    components.hour = 10;
+    components.minute = 10;
+    components.second = 0;
+    _date = [calendar dateFromComponents:components];
     
     _enableShadows = YES;
     _enableGraduations = YES;
@@ -128,23 +137,26 @@
     timerAlreadyInAction = NO;
     skipOneCycle = NO;
     _realTimeIsActivated = NO;
-    _militaryTime = NO;
 }
 
 - (void)layoutSubviews {
     if (shouldUpdateSubviews == YES) {
         
-        if ([self.delegate respondsToSelector:@selector(clockDidBeginLoading:)])
+        if ([self.delegate respondsToSelector:@selector(clockDidBeginLoading:)]) {
             [self.delegate clockDidBeginLoading:self];
+        }
         
-        if ([self.delegate respondsToSelector:@selector(dateFormatterForClock:)] && [self.delegate respondsToSelector:@selector(timeForClock:)])
+        if ([self.delegate respondsToSelector:@selector(dateFormatterForClock:)] && [self.delegate respondsToSelector:@selector(timeForClock:)]) {
             [self getTimeFromString];
+        }
+        
+        if ([self.delegate respondsToSelector:@selector(dateForClock:)]) {
+            self.date = [self.delegate dateForClock:self];
+        }
         
         if (self.currentTime == YES) {
             [self setClockToCurrentTimeAnimated:YES];
         }
-        
-        [self timeFormatVerification];
         
         self.hourHand = [[KSMHand alloc] initWithFrame:self.bounds];
         self.hourHand.degree = [self degreesFromHour:self.hours andMinutes:self.minutes];
@@ -202,8 +214,9 @@
         }
 #endif
         
-        if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:Hours:Minutes:Seconds:)]) {
-        [self.delegate currentTimeOnClock:self Hours:[NSString stringWithFormat:@"%li", (long)self.hours] Minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] Seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
+        if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:date:timeZone:hours:minutes:seconds:)]) {
+            
+            [self.delegate currentTimeOnClock:self date:self.date timeZone:self.timeZone hours:[NSString stringWithFormat:@"%li", (long)self.hours] minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
         }
         shouldUpdateSubviews = NO;
     
@@ -212,19 +225,63 @@
     }
 }
 
+// Ensure self.date reflects any time unit values that are set directly
+- (void)setHours:(NSInteger)hours {
+    _hours = hours;
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar componentsInTimeZone:self.timeZone fromDate:self.date];
+    components.hour = hours;
+    self.date = [calendar dateFromComponents:components];
+}
+
+- (void)setMinutes:(NSInteger)minutes {
+    _minutes = minutes;
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar componentsInTimeZone:self.timeZone fromDate:self.date];
+    components.minute = minutes;
+    self.date = [calendar dateFromComponents:components];
+}
+
+- (void)setSeconds:(NSInteger)seconds {
+    _seconds = seconds;
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar componentsInTimeZone:self.timeZone fromDate:self.date];
+    components.second = seconds;
+    self.date = [calendar dateFromComponents:components];
+}
+
+// Ensure accessing hours, minutes, seconds values are retrieved from self.date
+- (NSInteger)hours {
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar componentsInTimeZone:self.timeZone fromDate:self.date];
+    return components.hour;
+}
+
+- (NSInteger)minutes {
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar componentsInTimeZone:self.timeZone fromDate:self.date];
+    return components.minute;
+}
+
+- (NSInteger)seconds {
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *components = [calendar componentsInTimeZone:self.timeZone fromDate:self.date];
+    return components.second;
+}
+
 #pragma mark - Real Time
 
 - (void)updateEverySecond {
     if (_realTimeIsActivated == YES) {
-        self.seconds = self.seconds + 1;
+        self.date = [[NSCalendar currentCalendar] dateByAddingUnit:NSCalendarUnitSecond value:1 toDate:self.date options:kNilOptions];
         if (skipOneCycle == YES) {
             skipOneCycle = NO;
         } else {
-            [self timeFormatVerification];
+            [self updateClockHandsAnimated:YES];
             
-            [self.secondHand setDegree:[self degreesFromMinutes:self.seconds] animated:YES];
-            if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:Hours:Minutes:Seconds:)]) {
-                [self.delegate currentTimeOnClock:self Hours:[NSString stringWithFormat:@"%li", (long)self.hours] Minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] Seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
+            if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:date:timeZone:hours:minutes:seconds:)]) {
+                
+                [self.delegate currentTimeOnClock:self date:self.date timeZone:self.timeZone hours:[NSString stringWithFormat:@"%li", (long)self.hours] minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
             }
         }
     }
@@ -242,42 +299,29 @@
 }
 
 - (void)updateTimeAnimated:(BOOL)animated {
-    if ([self.delegate respondsToSelector:@selector(dateFormatterForClock:)] && [self.delegate respondsToSelector:@selector(timeForClock:)])
+    if ([self.delegate respondsToSelector:@selector(dateFormatterForClock:)] && [self.delegate respondsToSelector:@selector(timeForClock:)]) {
         [self getTimeFromString];
-    
-    [self timeFormatVerification];
-    
+    }
+    else if ([self.delegate respondsToSelector:@selector(dateForClock:)]) {
+        self.date = [self.delegate dateForClock:self];
+    }
     skipOneCycle = animated;
-    [self.minuteHand setDegree:[self degreesFromMinutes:self.minutes] animated:animated];
-    [self.hourHand   setDegree:[self degreesFromHour:self.hours andMinutes:self.minutes] animated:animated];
-    [self.secondHand setDegree:[self degreesFromMinutes:self.seconds] animated:animated];
+    [self updateClockHandsAnimated:animated];
 
-    if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:Hours:Minutes:Seconds:)]) {
-        [self.delegate currentTimeOnClock:self Hours:[NSString stringWithFormat:@"%li", (long)self.hours] Minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] Seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
+    if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:date:timeZone:hours:minutes:seconds:)]) {
+        
+        [self.delegate currentTimeOnClock:self date:self.date timeZone:self.timeZone hours:[NSString stringWithFormat:@"%li", (long)self.hours] minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
     }
 }
 
 - (void)setClockToCurrentTimeAnimated:(BOOL)animated {
-    NSDate *currentTime = [NSDate date];
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    [dateFormatter setDateFormat:@"hh"];
-    NSString *currentHour = [dateFormatter stringFromDate: currentTime];
-    [dateFormatter setDateFormat:@"mm"];
-    NSString *currentMinute = [dateFormatter stringFromDate: currentTime];
-    [dateFormatter setDateFormat:@"ss"];
-    NSString *currentSecond = [dateFormatter stringFromDate: currentTime];
-    
-    self.hours = [currentHour integerValue];
-    self.minutes = [currentMinute integerValue];
-    self.seconds = [currentSecond integerValue];
-    
+    self.date = [NSDate date];
     skipOneCycle = animated;
-    [self.minuteHand setDegree:[self degreesFromMinutes:self.minutes] animated:animated];
-    [self.hourHand   setDegree:[self degreesFromHour:self.hours andMinutes:self.minutes] animated:YES];
-    [self.secondHand setDegree:[self degreesFromMinutes:self.seconds] animated:YES];
+    [self updateClockHandsAnimated:animated];
 
-    if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:Hours:Minutes:Seconds:)]) {
-    [self.delegate currentTimeOnClock:self Hours:[NSString stringWithFormat:@"%li", (long)self.hours] Minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] Seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
+    if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:date:timeZone:hours:minutes:seconds:)]) {
+        
+        [self.delegate currentTimeOnClock:self date:self.date timeZone:self.timeZone hours:[NSString stringWithFormat:@"%li", (long)self.hours] minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
     }
 }
 
@@ -297,6 +341,12 @@
     _realTimeIsActivated = NO;
 }
 
+- (void)updateClockHandsAnimated:(BOOL)animated {
+    [self.minuteHand setDegree:[self degreesFromMinutes:self.minutes] animated:animated];
+    [self.hourHand   setDegree:[self degreesFromHour:self.hours andMinutes:self.minutes] animated:animated];
+    [self.secondHand setDegree:[self degreesFromMinutes:self.seconds] animated:animated];
+}
+
 #pragma mark - Touch Gestures
 
 - (void)handlePan:(UIPanGestureRecognizer *)recognizer {
@@ -305,76 +355,31 @@
     self.oldMinutes = self.minutes;
     self.minutes = ((atan2f((translation.x - self.frame.size.height/2), (translation.y - self.frame.size.width/2)) * -(180/M_PI) + 180))/6;
     
-    if (self.oldMinutes > 45 && self.minutes < 15) { // If the user drags the minute hand from 59 to 00, updates the hour on the clock.
-        self.hours++;
+    if (self.oldMinutes > 45 && self.minutes < 15) { // If the user drags the minute hand from 59 to 00, updates the hour on the clock. ie clockwise
+        self.date = [[NSCalendar currentCalendar] dateByAddingUnit:NSCalendarUnitHour value:1 toDate:self.date options:kNilOptions];
     }
-    else if (self.oldMinutes < 15 && self.minutes > 45) { // If the user drags the minute hand from 00 to 59, updates the hour on the clock.
-        self.hours--;
+    else if (self.oldMinutes < 15 && self.minutes > 45) { // If the user drags the minute hand from 00 to 59, updates the hour on the clock. ie anticlockwise
+        self.date = [[NSCalendar currentCalendar] dateByAddingUnit:NSCalendarUnitHour value:-1 toDate:self.date options:kNilOptions];
     }
-    if (self.militaryTime == NO) {
-        if (self.hours >= 13) {
-            self.hours = 1;
-        } else if (self.hours <= 0) {
-            self.hours = 12;
-        }
-    } else {
-        if (self.hours >= 24) {
-            self.hours = 00;
-        } else if (self.hours <= 0) {
-            self.hours = 23;
-        }
-    }
+    
     self.minuteHand.transform = CGAffineTransformMakeRotation(angleInRadians + M_PI/2);
     self.hourHand.transform = CGAffineTransformMakeRotation(([self degreesFromHour:self.hours andMinutes:self.minutes])*(M_PI/180));
     
-    if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:Hours:Minutes:Seconds:)]) {
-        [self.delegate currentTimeOnClock:self Hours:[NSString stringWithFormat:@"%li", (long)self.hours] Minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] Seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
+    if ([self.delegate respondsToSelector:@selector(currentTimeOnClock:date:timeZone:hours:minutes:seconds:)]) {
+        
+        [self.delegate currentTimeOnClock:self date:self.date timeZone:self.timeZone hours:[NSString stringWithFormat:@"%li", (long)self.hours] minutes:[NSString stringWithFormat:@"%li", (long)self.minutes] seconds:[NSString stringWithFormat:@"%li", (long)self.seconds]];
     }
 }
 
 #pragma mark - Conversions/Calculations
 
-- (void)timeFormatVerification {
-    if (self.hours > 12 && self.militaryTime == NO) // If the time has been set to military time, converts it to 12-hour clock.
-        self.hours = self.hours - 12;
-    
-    if (self.seconds >= 60) {
-        self.seconds = 0;
-        self.minutes = self.minutes + 1;
-        [self.minuteHand setDegree:[self degreesFromMinutes:self.minutes] animated:YES];
-        [self.hourHand   setDegree:[self degreesFromHour:self.hours andMinutes:self.minutes] animated:YES];
-    }
-    else if (self.seconds < 0) {
-        self.seconds = 59;
-        self.minutes = self.minutes - 1;
-        [self.minuteHand setDegree:[self degreesFromMinutes:self.minutes] animated:YES];
-        [self.hourHand   setDegree:[self degreesFromHour:self.hours andMinutes:self.minutes] animated:YES];
-    }
-    
-    if (self.minutes >= 60) {
-        self.minutes = 0;
-        self.hours = self.hours + 1;
-    }
-    else if (self.minutes < 0) {
-        self.minutes = 59;
-        self.hours = self.hours - 1;
-    }
-    if (self.militaryTime == NO) {
-        if (self.hours >= 13) {
-            self.hours = 1;
-        } else if (self.hours <= 0) {
-            self.hours = 12;
-        }
-    } else {
-        if (self.hours >= 24) {
-            self.hours = 00;
-        } else if (self.hours < 0) {
-            self.hours = 23;
-        }
-    }
-}
-
 - (float)degreesFromHour:(NSInteger)hour andMinutes:(NSInteger)minutes {
+    
+    // handle 24hr time
+    if (hour > 12) {
+        hour -= 12;
+    }
+    
     float degrees = (hour*30) + (minutes/10)*6;
     return degrees;
 }
@@ -385,23 +390,12 @@
 }
 
 - (void)getTimeFromString {
-    NSString * stringDateFormatter = [self.delegate dateFormatterForClock:self];
-    NSString * stringTime = [self.delegate timeForClock:self];
+    NSString *stringDateFormatter = [self.delegate dateFormatterForClock:self];
+    NSString *stringTime = [self.delegate timeForClock:self];
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:stringDateFormatter];
-    NSDate *time = [dateFormatter dateFromString:stringTime];
-    
-    NSCalendar *calendar = [NSCalendar currentCalendar];
-    NSDateComponents *components = [calendar components:(NSHourCalendarUnit |NSMinuteCalendarUnit |NSSecondCalendarUnit) fromDate: time];
-    
-    NSInteger hours = [components hour];
-    NSInteger minutes = [components minute];
-    NSInteger seconds = [components second];
-    
-    self.hours = hours;
-    self.minutes = minutes;
-    self.seconds = seconds;
+    self.date = [dateFormatter dateFromString:stringTime];
 }
 
 #pragma mark - Drawings
@@ -470,7 +464,6 @@
     }
     
     // DIGIT DRAWING
-
     if (self.enableDigit == YES) {
         CGPoint center = CGPointMake(rect.size.width/2.0f, rect.size.height/2.0f);
         CGFloat markingDistanceFromCenter = rect.size.width/2.0f - self.digitFont.lineHeight/4.0f - 15 + self.digitOffset;

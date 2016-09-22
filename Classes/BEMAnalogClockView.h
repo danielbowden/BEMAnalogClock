@@ -47,6 +47,12 @@ IB_DESIGNABLE
 /// The seconds property. Used to set up the second hand. Default value is 0.
 @property (nonatomic, assign) NSInteger seconds;
 
+// The date property. Used to set up the clock to a specific date. Default value is now.
+@property (nonatomic, strong) NSDate *date;
+
+// The timeZone property. Used in conjunction with `date` to show the time on a clock in a specified time zone. Default value is current.
+@property (nonatomic, strong) NSTimeZone *timeZone;
+
 /// If set to YES, the hands will cast a shadow. Default value is YES.
 @property (nonatomic) IBInspectable BOOL enableShadows;
 
@@ -67,9 +73,6 @@ IB_DESIGNABLE
 
 /// If set to YES, the clock time can be updated via touch inputs. Default value is NO.
 @property (nonatomic) BOOL setTimeViaTouch;
-
-/// If set to YES, the clock time will suport military time. Default value is NO.
-@property (nonatomic) IBInspectable BOOL militaryTime;
 
 /// If set to YES, the clock real time feature is activated. Read only.
 @property (readonly, nonatomic) BOOL realTimeIsActivated;
@@ -200,10 +203,12 @@ IB_DESIGNABLE
 
 /** The time that is currently displayed on the clock. Gets called everytime the time on the clock changes.
  @param clock The clock object which is currently displaying the time.
+ @param date The full date object currently displayed on the clock
+ @param timeZone The time zone represented by this clock 
  @param hours The hours currently displayed on the clock by the hour hand.
  @param minutes The minutes currently displayed on the clock by the minute hand.
  @param seconds The seconds currently displayed on the clock by the second hand. */
-- (void)currentTimeOnClock:(BEMAnalogClockView *)clock Hours:(NSString *)hours Minutes:(NSString *)minutes Seconds:(NSString *)seconds;
+- (void)currentTimeOnClock:(BEMAnalogClockView *)clock date:(NSDate *)date timeZone:(NSTimeZone *)timeZone hours:(NSString *)hours minutes:(NSString *)minutes seconds:(NSString *)seconds;
 
 
 //----- DATA SOURCE -----//
@@ -217,6 +222,13 @@ IB_DESIGNABLE
  @param clock The clock object.
  @return The date used to set up the clock. Should conform to the date formatter provided in the methode dateFormatterForClock: */
 - (NSString *)timeForClock:(BEMAnalogClockView *)clock;
+
+
+/** The date used to set up the hands of the clock.
+ @param clock The clock object
+ @return The date used to set up the clock. This will be represented on the clock relative to the clock's time zone property, defaults to local time zone.
+ */
+- (NSDate *)dateForClock:(BEMAnalogClockView *)clock;
 
 
 //----- GRADUATION CUSTOMIZATION -----//

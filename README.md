@@ -20,7 +20,7 @@
   * [Installation](#installation)
   * [Setup](#setup)
   * [Setting up the time on the clock](#setting-up-the-time-on-the-clock)
-  * [Reloading the clock](#reloading-the-clock) 
+  * [Reloading the clock](#reloading-the-clock)
   * [Updating the time on the clock](#updating-the-time-on-the-clock)
   * [Current time](#current-time)
   * [Real time](#real-time)
@@ -42,7 +42,7 @@ Learn more about the BEMAnalogClock project requirements, licensing, and contrib
 See the [License]( https://github.com/Boris-Em/BEMAnalogClock/blob/master/LICENSE). You are free to make changes and use this in either personal or commercial projects. Attribution is not required, but it is appreciated. A little Thanks! (or something to that affect) would be much appreciated. If you use BEMAnalogClock in your app, let us know.
 
 ### Contributions
-Any contribution is more than welcome! You can contribute through pull requests and issues on GitHub. 
+Any contribution is more than welcome! You can contribute through pull requests and issues on GitHub.
 
 ### Sample App
 The iOS Sample App included with this project demonstrates how to correctly setup and use BEMAnalogClock. You can refer to the sample app for an understanding of how to use and setup BEMAnalogClock.
@@ -56,20 +56,26 @@ All methods, properties, types, and delegate methods available on the BEMAnalogC
 
 ### Installation
 The easiest way to install BEMAnalogClock is to use <a href="http://cocoapods.org/" target="_blank">CocoaPods</a>. To do so, simply add the following line to your `Podfile`:
-	<pre><code>pod 'BEMAnalogClock'</code></pre>
-	
-The other way to install BEMAnalogClock, is to drag and drop the *Classes* folder into your Xcode project. When you do so, check the "*Copy items into destination group's folder*" box. 
+```sh
+  pod 'BEMAnalogClock'
+```
+
+The other way to install BEMAnalogClock, is to drag and drop the *Classes* folder into your Xcode project. When you do so, check the "*Copy items into destination group's folder*" box.
 
 ### Setup
 Setting up BEMAnalogClock in your project is simple. Follow the steps below to get everything up and running.
 
  1. Import `"BEMAnalogClockView.h"` to the header of your view controller:
 
-         #import "BEMAnalogClockView.h"
+  ```objc
+  #import "BEMAnalogClockView.h"
+  ```
 
  2. Implement the `BEMAnalogClockDelegate` to the same view controller:
 
-         @interface YourViewController : UIViewController <BEMAnalogClockDelegate>
+ ```objc
+ @interface YourViewController : UIViewController <BEMAnalogClockDelegate>
+ ```
 
  3.  BEMAnalogClockView can be initialized in one of two ways. You can either add it directly to your interface (storyboard file) OR through code. Both ways provide the same initialization, just different ways to do the same thing. Use the method that makes sense for your app or project.
 
@@ -81,10 +87,11 @@ Setting up BEMAnalogClock in your project is simple. Follow the steps below to g
 
      **Code Initialization**  
      Just add the following code to your implementation (usually the `viewDidLoad` method).
-
-         BEMAnalogClockView *myClock = [[BEMAnalogClockView alloc] initWithFrame:CGRectMake(105, 100, 100, 100)];
-         myGraph.delegate = self;
-         [self.view addSubview:myClock];
+      ```objc
+      BEMAnalogClockView *myClock = [[BEMAnalogClockView alloc] initWithFrame:CGRectMake(105, 100, 100, 100)];
+      myClock.delegate = self;
+      [self.view addSubview:myClock];
+      ```
 
 ### Setting up the time on the clock
 By default, the clock will display [10:10](http://en.wikipedia.org/wiki/Watch#Analog). There are three ways to initialize the clock with a custom time.
@@ -92,21 +99,25 @@ By default, the clock will display [10:10](http://en.wikipedia.org/wiki/Watch#An
 **By directly attributing values to the time properties**  
 The easiest way is to change the values of the NSInteger properties `hours`, `minutes` and `seconds`. For example in `viewDidLoad`, the time on the clock could be set up this way:  
 
-    self.myClock.hours = 7;
-    self.myClock.minutes = 37;
-    self.myClock.seconds = 10;
+```objc
+self.myClock.hours = 7;
+self.myClock.minutes = 37;
+self.myClock.seconds = 10;
+```
 
 **By directly setting the date property**
 The clock can represent an NSDate in a given time zone. This can be useful for showing world clocks. A clock's `timeZone` property defaults to your local time zone. The easiest way is to change the `date` and optionally the `timeZone` values. For example in `viewDidLoad`, the time on multiple world clocks could be set up this way:
 
-    NSDate *now = [NSDate date];
-    self.localClock.date = now;
+```objc
+NSDate *now = [NSDate date];
+self.localClock.date = now;
 
-    self.sydneyClock.timeZone = [NSTimeZone timeZoneWithName:@"Australia/Sydney"];
-    self.sydneyClock.date = now;
+self.sydneyClock.timeZone = [NSTimeZone timeZoneWithName:@"Australia/Sydney"];
+self.sydneyClock.date = now;
 
-    self.losAngelesClock.timeZone = [NSTimeZone timeZoneWithName:@"America/Los_Angeles"];
-    self.losAngelesClock.date = now;
+self.losAngelesClock.timeZone = [NSTimeZone timeZoneWithName:@"America/Los_Angeles"];
+self.losAngelesClock.date = now;
+```
 
 **By conforming to the `BEMAnalogClockDelegate` protocol**  
 The other way to set up the time on the clock is by using the delegate methods ` timeForClock:` and ` dateFormatterForClock:` or `dateForClock:`.
@@ -115,55 +126,59 @@ The other way to set up the time on the clock is by using the delegate methods `
 `dateForClock:` should return an NSDate representing the point in time you want the clock to be set up at.
 Here is an example on how these methods are used on a ViewController:
 
-    - (NSString *)timeForClock:(BEMAnalogClockView *)clock {
-        return @"11, 03 1982 07:37:10"; // The string containing the time
-    }
+```objc
+- (NSString *)timeForClock:(BEMAnalogClockView *)clock {
+    return @"11, 03 1982 07:37:10"; // The string containing the time
+}
 
-    - (NSString *)dateFormatterForClock:(BEMAnalogClockView *)clock {
-        return @"MM, dd yyyy HH:mm:ss"; // The date format used by the string in “timeForClock”.
-    }
+- (NSString *)dateFormatterForClock:(BEMAnalogClockView *)clock {
+    return @"MM, dd yyyy HH:mm:ss"; // The date format used by the string in “timeForClock”.
+}
 
-    - (NSDate *)dateForClock:(BEMAnalogClockView *)clock {
-        NSDate *now = [NSDate date];
-        return now;
-    }
+- (NSDate *)dateForClock:(BEMAnalogClockView *)clock {
+    NSDate *now = [NSDate date];
+    return now;
+}
 
-    // OR //
+// OR //
 
-    - (NSDate *)dateForClock:(BEMAnalogClockView *)clock {
-        NSCalendar *calendar = [NSCalendar currentCalendar];
-        NSDateComponents *components = [calendar components:NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:[NSDate date]];
-        components.hour = 4;
-        components.minute = 35;
-        components.second = 0;
-        return [calendar dateFromComponents:components];
-    }
-
-
+- (NSDate *)dateForClock:(BEMAnalogClockView *)clock {
+  NSCalendar *calendar = [NSCalendar currentCalendar];
+  NSDateComponents *components = [calendar components:NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:[NSDate date]];
+  components.hour = 4;
+  components.minute = 35;
+  components.second = 0;
+  return [calendar dateFromComponents:components];
+}
+```
 
 ### Reloading the clock
 BEMAnalogClock has a `reloadClock` method. Calling it will completely reload/reinitialize the clock. `layoutSubviews` will be called again as well as all of the properties. The clock will be entirely redrawn.
 
-    - (void)anyMethodInYourOwnController {
-        // Change clock properties
-        [self.myClock reloadClock]; // Reload the clock
-    }
+```objc
+- (void)anyMethodInYourOwnController {
+  // Change clock properties
+  [self.myClock reloadClock]; // Reload the clock
+}
+```
 
 ### Updating the time on the clock
 The method `updateTimeAnimated:` is here to change the time on the clock after it’s been initialized. The parameter `animated` controls if the hands on the clock should go to the new position with an animation or simply “jump” there. Here is an example of how to use it:  
 
-    -(void)anyMethodInYourOwnController {
-      // Update the time on the clock
-      self.myClock.hours = arc4random() % 12 // Random value between 1 and 12
-      self.myClock.minutes = arc4random() % 60 // Random value between 1 and 60 
-      self.myClock.seconds = arc4random() % 60 // Random value between 1 and 60
-      [self.myClock updateTimeAnimated:YES] // Update the time on the clock
-    }
+```objc
+-(void)anyMethodInYourOwnController {
+  // Update the time on the clock
+  self.myClock.hours = arc4random() % 12 // Random value between 1 and 12
+  self.myClock.minutes = arc4random() % 60 // Random value between 1 and 60
+  self.myClock.seconds = arc4random() % 60 // Random value between 1 and 60
+  [self.myClock updateTimeAnimated:YES] // Update the time on the clock
+}
 
-    -(void)anotherMethodUsingDateInstead {
-      self.myClock.date = [NSDate date];
-      [self.myClock updateTimeAnimated:YES];
-    }
+-(void)anotherMethodUsingDateInstead {
+  self.myClock.date = [NSDate date];
+  [self.myClock updateTimeAnimated:YES];
+}
+```
 
 <p align="center"><img src="http://s18.postimg.org/awr1qjm8p/BEMAnalog_Clock_Animation.gif"/></p>
 
@@ -172,44 +187,52 @@ The method `updateTimeAnimated:` is here to change the time on the clock after i
 BEMAnalogClock makes it possible to set the time on the clock to the time of the user’s device. There are two ways to do so.
 When initializing the clock, you can set the property `currentTime` to YES (default value is NO).
 
-  	myClock.currentTime = YES;
-
+```objc
+myClock.currentTime = YES;
+```
 
 Or you can call the method `setClockToCurrentTimeAnimated:`. The parameter `animated` is similar to the one of `updateTimeAnimated`. It controls if the hands of the clock should move with an animation to the new position or not.
 
-    - (void)anyMethodInYourOwnController {
-        [self.myClock setClockToCurrentTimeAnimated:YES]; // Set the time on the clock to the one on the user's device
-    }
-
+```objc
+- (void)anyMethodInYourOwnController {
+    [self.myClock setClockToCurrentTimeAnimated:YES]; // Set the time on the clock to the one on the user's device
+}
+```
 
 ### Real time
-The clock can be updated in real time. Meaning that the second hand will move every second, the minute one every minute and the hour one every hour. 
+The clock can be updated in real time. Meaning that the second hand will move every second, the minute one every minute and the hour one every hour.
 To do so, you can either set the property `realTime` to YES (default value is NO) when initializing the graph.
 
-    myClock.realTime = YES;
-    
+```objc
+myClock.realTime = YES;
+```
+
 Or you can use the methods `startRealTime` and `stopRealTime` to start/stop the real time feature:
 
-    [self.myGraph startRealTime]; // The clock will start being updated in real time.
-    [self.myGraph stopRealTime]; // The clock will stop being updated in real time.
-    
+```objc
+[self.myGraph startRealTime]; // The clock will start being updated in real time.
+[self.myGraph stopRealTime]; // The clock will stop being updated in real time.
+```
+
 The property `realTimeIsActivated` (read only) reports if the clock is currently using the real time feature or not.
 
 ### Time reporting
 The delegate method `currentTimeOnClock:date:timeZone:hours:minutes:seconds:` is here to get the time currently displayed on the clock. It gets called every time the clock is updated. The parameters `hours`, `minutes` and `seconds` are strings of the hours, minutes and seconds currently displayed on the clock. The `date` parameter is an NSDate for the full point in time currently displayed on the clock. The `timeZone` parameter the NSTimeZone this clock is displaying the time in.
 Here is an example on how to use the method:
 
-    - (void)currentTimeOnClock:(BEMAnalogClockView *)clock date:(NSDate *)date timeZone:(NSTimeZone *)timeZone hours:(NSString *)hours minutes:(NSString *)minutes seconds:(NSString *)seconds;
-        NSLog(@"Hours: %@", hours); // The hours currently displayed on the clock by the hour hand.
-        NSLog(@"Minutes: %@", minutes); // The minutes currently displayed on the clock by the minute hand.
-        NSLog(@"Seconds: %@", seconds); // The seconds currently displayed on the clock by the second hand.
+```objc
+- (void)currentTimeOnClock:(BEMAnalogClockView *)clock date:(NSDate *)date timeZone:(NSTimeZone *)timeZone hours:(NSString *)hours minutes:(NSString *)minutes seconds:(NSString *)seconds;
+    NSLog(@"Hours: %@", hours); // The hours currently displayed on the clock by the hour hand.
+    NSLog(@"Minutes: %@", minutes); // The minutes currently displayed on the clock by the minute hand.
+    NSLog(@"Seconds: %@", seconds); // The seconds currently displayed on the clock by the second hand.
 
-        NSLog(@"Time zone: %@", timeZone.name);
-        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-        formatter.dateFormat = @"EE dd MMM yyyy HH:mm:ss";
-        formatter.timeZone = timeZone;
-        NSLog(@"Date: %@", [formatter stringFromDate:date]); // Logs "Date: Tue 20 Sep 2016 23:33:51"
-    }
+    NSLog(@"Time zone: %@", timeZone.name);
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.dateFormat = @"EE dd MMM yyyy HH:mm:ss";
+    formatter.timeZone = timeZone;
+    NSLog(@"Date: %@", [formatter stringFromDate:date]); // Logs "Date: Tue 20 Sep 2016 23:33:51"
+}
+```
 
 ### Adjusting the time on the clock via touch
 
@@ -246,44 +269,50 @@ Five methods make it easy to customize the graduations of the clock. They all co
   3. `graduationWidthForIndex:` controls the width of the graduations.
   4. `graduationLengthForIndex:` controls the length of the graduations.
   5. `graduationOffsetForIndex:` controls the distance from the border of the graduations.  
-  
+
 Here is an example on how to use the `graduationLengthForIndex:` method:
 
-    - (CGFloat)analogClock:(BEMAnalogClockView *)clock graduationLengthForIndex:(NSInteger)index {
-        if (index == 30) { 
-        return 50; // The length of 30th graduation will be 50.
-        } else if (!(index % 5) == 1){
-        return 20; // The length of one graduation in every five graduation will be 20.
-        } else {
-        return 5; // The length of the rest of the graduations will be 5.
-        }
+```objc
+- (CGFloat)analogClock:(BEMAnalogClockView *)clock graduationLengthForIndex:(NSInteger)index {
+    if (index == 30) {
+    return 50; // The length of 30th graduation will be 50.
+    } else if ((index % 5) == 0){
+    return 20; // The length of one graduation in every five graduation will be 20.
+    } else {
+    return 5; // The length of the rest of the graduations will be 5.
     }
+}
+```
 
 <p align="center"><img src="http://s18.postimg.org/oxpb0kkjd/BEMAnalog_Clock_Graduation.jpg"/></p>
 
 <p align="center">
 
 And here is the result of the above example. The 30th graduation of the clock is longer than the other ones. One graduation in every five graduation is also longer than the rest.</p>
-  
+
 You can use the BOOL property `enableGraduations` to activate or deactivate the graduations on the clock. If it is set to YES the graduations will be visible, if set to NO, they won't (default value is YES).
 
 #### Displaying digits on the clock's face
 <p align="center"><img src="http://s22.postimg.org/nd1vaewoh/BEMAnalog_Clock_Digits.jpg"/></p>
 <b>BEMAnalogClock</b> gives you the option to display 12 digits on the clock's face (see above image). To do so, simply set the BOOL property `enableDigit` to YES.
 
-    self.myClock.enableDigit = YES;
-    
+```objc
+self.myClock.enableDigit = YES;
+```
+
 Three properties are here to customize this feature: `digitColor`, `digitFont` and `digitOffset`.
 
-    self.myClock.digitColor = [UIColor whiteColor]; // The color of the digits displayed on the clock.
-    self.myClock.digitFont = [UIFont fontWithName:@"HelveticaNeue-Thin" size:17]; // The font of the digits displayed on the clock.
-    self.myClock.digitOffset = 10; // The offset for the position of the digits from the center of the clock.
-    
+```objc
+self.myClock.digitColor = [UIColor whiteColor]; // The color of the digits displayed on the clock.
+self.myClock.digitFont = [UIFont fontWithName:@"HelveticaNeue-Thin" size:17]; // The font of the digits displayed on the clock.
+self.myClock.digitOffset = 10; // The offset for the position of the digits from the center of the clock.
+```
+
 ### Military Time (24 Hours)
 
 The clock can display the time provided in either 12hr or 24hr values. On an analog clock both will look the same, however if you would like to represent AM/PM correctly in the clock's reported `date` property you should use 24hr values. ie. 17 instead of 5.
 
-```Objective-C
+```objc
 self.myClock.hours = 17;
 self.myClock.minutes = 5;
 self.myClock.seconds = 0;
